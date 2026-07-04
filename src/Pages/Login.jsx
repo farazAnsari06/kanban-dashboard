@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight} from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const logins = [
   {
@@ -15,6 +16,8 @@ const logins = [
 ]
 
 const Login = () => {
+
+  const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('')
@@ -39,6 +42,7 @@ const Login = () => {
 
     if(user) {
       toast.success('Logged In Successfully!')
+      navigate('/home')
     } else {
       toast.error('Wrong email/password.')
     }
@@ -63,6 +67,11 @@ const Login = () => {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => {
+                if(e.key === 'Enter') {
+                  handleLogin();
+                }
+              }}
             />
           </div>
 
@@ -73,6 +82,11 @@ const Login = () => {
               type="text"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if(e.key === 'Enter') {
+                  handleLogin();
+                }
+              }}
             />
           </div>
 
