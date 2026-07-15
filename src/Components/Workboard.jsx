@@ -2,7 +2,8 @@ import { Ellipsis, Plus, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner';
-import { addCard } from '../features/cards/cardsSlice';
+import { v4 as uuidv4 } from 'uuid';
+import { addCard, deleteCard } from '../features/cards/cardsSlice';
 
 const Workboard = () => {
   const cards = useSelector((state) => state.cards.cards);
@@ -21,6 +22,7 @@ const Workboard = () => {
     }
 
     let newCard = {
+      id: uuidv4(),
       name: listName,
       taskCounts: 0,
       taskIds: [],
@@ -29,6 +31,11 @@ const Workboard = () => {
     dispatch(addCard(newCard));
     setListName('');
     setListCreation(false);
+  }
+
+  const handleDeleteCard = (id) => {
+    dispatch(deleteCard(id));
+    setListMenu(null);
   }
 
   return (
@@ -60,7 +67,9 @@ const Workboard = () => {
                   Rename list
                 </button>
                 <div className='w-full h-[0.5px] bg-zinc-500'></div>
-                <button className='text-left p-3 text-red-400'>
+                <button
+                  onClick={() => handleDeleteCard(item.id)}
+                  className='text-left p-3 text-red-400'>
                   Delete list
                 </button>
               </div>
