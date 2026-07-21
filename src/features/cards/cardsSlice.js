@@ -21,9 +21,16 @@ const cardsSlice = createSlice({
     },
     deleteCard: (state, action) => {
       state.cards = state.cards.filter((card, id) => card.id !== action.payload);
+    },
+    renameCard: (state, action) => {
+      let card = state.cards.find((card) => card.id === action.payload.id);
+
+      if(card) {
+        card.name = action.payload.name;
+      }
     }
   }
 });
 
-export const { addCard, deleteCard } = cardsSlice.actions;
+export const { addCard, deleteCard, renameCard } = cardsSlice.actions;
 export default cardsSlice.reducer;

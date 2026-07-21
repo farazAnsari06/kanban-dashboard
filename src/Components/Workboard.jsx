@@ -3,20 +3,23 @@ import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
-import { addCard, deleteCard } from '../features/cards/cardsSlice';
+import { addCard, deleteCard, renameCard } from '../features/cards/cardsSlice';
 
 const Workboard = () => {
   const cards = useSelector((state) => state.cards.cards);
+  const tasks = useSelector((state) => state.tasks.tasks);
   const dispatch = useDispatch();
 
   const [listCreation, setListCreation] = useState(false);
   const [listName, setListName] = useState('');
   const [listMenu, setListMenu] = useState(null);
+  const [renameList, setRenameList] = useState(null);
+  const [newName, setNewName] = useState('');
 
-  console.log(cards);
+  console.log(tasks);
 
   const handleListAdd = () => {
-    if(listName === '') {
+    if(!listName.trim()) {
       toast.warning('Please enter list name.');
       return;
     }
@@ -38,32 +41,73 @@ const Workboard = () => {
     setListMenu(null);
   }
 
+  const handleCardNameChange = (item) => {
+    setRenameList(item.id);
+    setNewName(item.name);
+    setListMenu(null);
+  }
+
+  const handleSubmitCardNameChange = (item) => {
+    let name = newName.trim();
+    
+    if(!name) return;
+
+    dispatch(renameCard({id:item.id, name}));
+
+    setRenameList(null);
+    setNewName("");
+  }
+
   return (
     <div className='w-full h-full overflow-x-auto overflow-y-hidden p-4'>
       <div className='bg-amber-500 p-5 w-fit flex gap-2'>
         {/* Cards */}
         {cards.map((item, id) => (
-          <div key={id} className='bg-gray-100 w-72 h-fit p-2 rounded-2xl relative'>
+          <div key={item.id} className='bg-gray-100 w-72 h-fit p-2 rounded-2xl relative'>
             <div className='flex items-center gap-2 px-2 py-2 flex-shrink-0'>
-              <button className='flex-1 text-left'>
-                {item.name}
-              </button>
+              {renameList === item.id && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => {
+                      handleSubmitCardNameChange(item);
+                    }}
+                  />
+                  <div className='flex-1 text-left bg-white p-2 z-20 rounded-2xl border-sky-500'>
+                    <input
+                      className='outline-none h-full w-full'
+                      onKeyDown={(e) => {
+                        if(e.key === 'Enter') {
+                          handleSubmitCardNameChange(item);
+                        }
+                      }} 
+                      type="text" value={newName} autoFocus onChange={(e) => setNewName(e.target.value)} />
+                  </div>
+                </>
+              )}
+              {renameList !== item.id && (
+                <span className='flex-1 text-left'>
+                  {item.name.length > 20 ?  `${item.name.slice(0, 20)}...` : item.name}
+                </span>
+              )}
               <span>{item.taskCounts}</span>
               <button 
-                onClick={() => setListMenu(id)}
+                onClick={() => setListMenu(item.id)}
                 className='rounded-full h-8 w-8 flex items-center justify-center hover:bg-gray-300 transition duration-[0.2s]'>
                 <Ellipsis/>
               </button>
             </div>
-            {listMenu === id && (
+            {listMenu === item.id && (
               <div
                 onClick={() => setListMenu(false)} 
                 className='w-screen h-screen fixed z-10 top-0 left-0'>
               </div>
             )}
-            {listMenu === id && (
+            {listMenu === item.id && (
               <div className='absolute w-44 h-fit flex flex-col bg-gray-100 border border-zinc-500 rounded-2xl right-5 top-12 z-20'>
-                <button className='text-left p-3'>
+                <button 
+                  onClick={() => handleCardNameChange(item)}
+                  className='text-left p-3'>
                   Rename list
                 </button>
                 <div className='w-full h-[0.5px] bg-zinc-500'></div>
@@ -74,6 +118,18 @@ const Workboard = () => {
                 </button>
               </div>
             )}
+            {/* Tasks */}
+            {item.taskIds.map((taskId) => {
+              let task = tasks.find(t => t.id === taskId);
+              console.log('Task : ', task)
+              if(!task) return null;
+
+              return (
+                <div key={task.id} className="bg-red-500 p-5">
+                  {task.name}
+                </div>
+              );
+            })}
             <button className='flex w-full items-center p-2 gap-2 hover:bg-gray-300 rounded-2xl transition duration-[0.2s]'>
               <Plus/>
               Add a card
